@@ -1,0 +1,21 @@
+{
+  "name": "myvault",
+  "version": "1.0.0",
+  "description": "Private vaults for yield farming",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "defi",
+    "yield",
+    "farming",
+    "vault",
+    "bsc",
+    "eth",
+    "farm",
+    "solidity"
+  ],
+  "author": "James Bachini",
+  "license": "ISC"
+}
