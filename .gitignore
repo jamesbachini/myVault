@@ -74,3 +74,10 @@ typings/
 
 # FuseBox cache
 .fusebox/
+
+node_modules
+.env
+
+#Hardhat files
+cache
+artifacts

@@ -17,5 +17,9 @@
     "solidity"
   ],
   "author": "James Bachini",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "hardhat": "^2.6.1"
+  }
 }
