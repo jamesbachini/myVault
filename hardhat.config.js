@@ -1,21 +1,35 @@
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
 
-// This is a sample Hardhat task. To learn how to create your own go to
-// https://hardhat.org/guides/create-task.html
+const ethers = require('ethers');
+const credentials = require('./credentials.js');
+
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
-
   for (const account of accounts) {
     console.log(account.address);
   }
 });
 
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
+task("account", "Print a random account", async (taskArgs, hre) => {
+  const wallet = ethers.Wallet.createRandom();
+  console.log('Unique Address: ', wallet.address);
+  const privateKey = wallet._signingKey().privateKey;
+  console.log('Unique privateKey: ', privateKey);
+});
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
   solidity: "0.8.4",
+  networks: {
+    kovan: {
+      url: `https://eth-kovan.alchemyapi.io/v2/${credentials.alchemy}`,
+      accounts: [credentials.privateKey],
+    },
+  },
+  etherscan: {
+    apiKey: credentials.etherscan
+  }
 };
