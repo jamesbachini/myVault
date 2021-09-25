@@ -31,19 +31,16 @@ contract myVault {
 	/* Kovan Addresses */
 	address public daiAddress = 0x4F96Fe3b7A6Cf9725f59d353F723c1bDb64CA6Aa;
 	address public wethAddress = 0xd0A1E359811322d97991E03f863a0C30C2cF029C;
-	address public usdcAddress = 0xe22da380ee6b445bb8273c81944adeb6e8450422;
-	address public payoutAddress = 0x689640212c2DA1E8aB878dA2801d7E09414ffEC8;
 	address public uinswapV3QuoterAddress = 0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6;
 	address public uinswapV3RouterAddress = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
 	address public chainLinkETHUSDAddress = 0x9326BFA02ADD2366b30bacB125260Af641031331;
-
-	/* Mainnet Addresses */
 
 	uint public ethPrice = 0;
 	uint public usdTargetPercentage = 40;
 	uint public usdDividendPercentage = 25; // 25% of 40% = 10% Annual Drawdown
 	uint private dividendFrequency = 5 minutes; // change to 1 years for production
 	uint public nextDividendTS;
+	address public owner;
 
 	using SafeERC20 for IERC20;
 
@@ -57,6 +54,7 @@ contract myVault {
 	constructor() {
 		console.log('Deploying myVault Version:', version);
 		 nextDividendTS = block.timestamp + dividendFrequency;
+		 owner = msg.sender;
 	}
 
 	function getDaiBalance() public view returns(uint) {
@@ -76,14 +74,6 @@ contract myVault {
 		return totalBalance;
 	}
 
-	function annualDividend() public {
-		require(block.timestamp > nextDividendTS, 'Dividend is not yet due');
-		uint balance = daiToken.balanceOf(address(this));
-		uint amount = (balance * usdDividendPercentage) / 100;
-		daiToken.safeTransfer(payoutAddress, amount);
-		nextDividendTS = block.timestamp + dividendFrequency;
-	}
-
 	function updateEthPriceUniswap() public returns(uint) {
 		uint ethPriceRaw = quoter.quoteExactOutputSingle(daiAddress,wethAddress,3000,100000,0);
 		ethPrice = ethPriceRaw / 100000;
@@ -97,6 +87,7 @@ contract myVault {
 	}
 
 	function rebalance() public {
+		require(msg.sender == owner, "Only the owner can rebalance their account");
 		uint usdBalance = daiToken.balanceOf(address(this));
 		uint totalBalance = getTotalBalance();
 		uint usdBalancePercentage = 100 * usdBalance / totalBalance;
@@ -159,19 +150,37 @@ contract myVault {
 		uniswapRouter.refundETH();
 	}
 
+	function annualDividend() public {
+		require(msg.sender == owner, "Only the owner can drawdown their account");
+		require(block.timestamp > nextDividendTS, 'Dividend is not yet due');
+		uint balance = daiToken.balanceOf(address(this));
+		uint amount = (balance * usdDividendPercentage) / 100;
+		daiToken.safeTransfer(owner, amount);
+		nextDividendTS = block.timestamp + dividendFrequency;
+	}
+
 	function closeAccount() public {
-		require(msg.sender == payoutAddress, "Only the payoutAddress can close their account");
+		require(msg.sender == owner, "Only the owner can close their account");
 		uint daiBalance = daiToken.balanceOf(address(this));
 		if (daiBalance > 0) {
-			daiToken.safeTransfer(payoutAddress, daiBalance);
+			daiToken.safeTransfer(owner, daiBalance);
 		}
 		uint wethBalance = wethToken.balanceOf(address(this));
 		if (wethBalance > 0) {
-			wethToken.safeTransfer(payoutAddress, wethBalance);
+			wethToken.safeTransfer(owner, wethBalance);
 		}
 	}
 
 	receive() external payable {
 		// accept ETH, do nothing as it would break the gas fee for a transaction
 	}
+
+	function wrapETH() public {
+		require(msg.sender == owner, "Only the owner can convert ETH to WETH");
+		uint ethBalance = address(this).balance;
+		require(ethBalance > 0, "No ETH available to wrap");
+		emit myVaultLog('wrapETH', ethBalance);
+		wethToken.deposit.value(ethBalance)();
+	}
+	
 }
