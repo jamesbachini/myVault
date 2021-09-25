@@ -28,6 +28,10 @@ module.exports = {
       url: `https://eth-kovan.alchemyapi.io/v2/${credentials.alchemy}`,
       accounts: [credentials.privateKey],
     },
+    local: {
+      url: `http://127.0.0.1:8545/`,
+      accounts: [credentials.privateKey],
+    },
   },
   etherscan: {
     apiKey: credentials.etherscan

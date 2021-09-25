@@ -5,12 +5,12 @@ async function main() {
   const contractName = 'myVault';
   await hre.run("compile");
   const smartContract = await hre.ethers.getContractFactory(contractName);
-  const smartContract = await MyVault.deploy();
-  await smartContract.deployed();
-  console.log(`${contractName} deployed to: ${smartContract.address}`);
+  const myVault = await smartContract.deploy();
+  await myVault.deployed();
+  console.log(`${contractName} deployed to: ${myVault.address}`);
 
-  const contractArtifacts = artifacts.readArtifactSync(contractName);
-  fs.writeFileSync('./artifacts/contractArtifactss.json',  JSON.stringify(contractArtifacts, null, 2));
+  const contractArtifacts = await artifacts.readArtifactSync(contractName);
+  fs.writeFileSync('./artifacts/contractArtifacts.json',  JSON.stringify(contractArtifacts, null, 2));
 
   await hre.run("verify:verify", {
     address: myVault.address,

@@ -7,16 +7,18 @@ https://jamesbachini.com/intermediate-solidity-tutorial/
 
 The idea for the vault is to accept funds and then rebalance back to a 60% ETH 40% DAI stablecoins
 
-Try running some of the following tasks:
+Build using the following commands:
 
 ```shell
-npx hardhat accounts
+git clone https://github.com/jamesbachini/myVault.git
+cd myVault
+mv credentials-example.js credentials.js
+code credentials.js (Enter Kovan wallet address with funds and Alchemy/Etherscan API Keys)
+npm install
 npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-node scripts/sample-script.js
-npx hardhat help
+npx hardhat node --fork https://eth-kovan.alchemyapi.io/v2/YourAlchemyAPIKeyHere
+npx hardhat test --network local
+npx hardhat run scripts/deploy.js --network kovan
 ```
 
 More info and solidity tutorials on my blog at https://jamesbachini.com

@@ -41,7 +41,7 @@ contract myVault {
   uint public ethPrice = 0;
   uint public usdTargetPercentage = 40;
   uint public usdDividendPercentage = 25; // 25% of 40% = 10% Annual Drawdown
-  uint private dividendFrequency = 5 minutes; // change to 1 years for production
+  uint private dividendFrequency = 3 minutes; // change to 1 years for production
   uint public nextDividendTS;
   address public owner;
 

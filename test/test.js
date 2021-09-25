@@ -1,26 +1,41 @@
-const { expect } = require('chai');
-const { ethers } = require('hardhat');
+const hre = require('hardhat');
+const assert = require('chai').assert;
 
 describe('myVault', () => {
+  let myVault;
 
-	let myVault;
-
-	beforeEach(async function () {
-		const MyVault = await ethers.getContractFactory('myVault');
-		[owner, addr1, addr2, ...addrs] = await ethers.getSigners();
-		myVault = await MyVault.deploy();
-		await myVault.deployed();
+  beforeEach(async function () {
+    const contractName = 'myVault';
+    await hre.run("compile");
+    const smartContract = await hre.ethers.getContractFactory(contractName);
+    myVault = await smartContract.deploy();
+    await myVault.deployed();
+    console.log(`${contractName} deployed to: ${myVault.address}`);
   });
 
-	
+  it('Should return the correct version', async () => {
+    const version = await myVault.version();
+    assert.equal(version,1);
+  });
 
-	it('Should send a transaction', async () => {
-		const initialDaiBalance = await myVault.daiBalance();
-		console.log('initialDaiBalance', initialDaiBalance);
-		const diviTX = await myVault.annualDividend();
-		await diviTX.wait();
-		const postDaiBalance = await myVault.daiBalance();
-		console.log('postDaiBalance', postDaiBalance);
-		//expect(await greeter.greet()).to.equal('Hello, world!');
-	});
+  it('Should return zero DAI balance', async () => {
+    const daiBalance = await myVault.getDaiBalance();
+    assert.equal(daiBalance,0);
+  });
+
+  it('Should Rebalance The Portfolio ', async () => {
+    const accounts = await hre.ethers.getSigners();
+    const owner = accounts[0];
+    console.log('Transfering ETH From Owner Address', owner.address);
+    await owner.sendTransaction({
+      to: myVault.address,
+      value: ethers.utils.parseEther('0.01'),
+    });
+    await myVault.wrapETH();
+    await myVault.updateEthPriceUniswap();
+    await myVault.rebalance();
+    const daiBalance = await myVault.getDaiBalance();
+    console.log('Rebalanced DAI Balance',daiBalance.toString());
+    assert.isAbove(daiBalance,0);
+  });
 });
