@@ -57,8 +57,8 @@ contract myVault {
 
   constructor() {
     console.log('Deploying myVault Version:', version);
-      nextDividendTS = block.timestamp + dividendFrequency;
-      owner = msg.sender;
+    nextDividendTS = block.timestamp + dividendFrequency;
+    owner = msg.sender;
   }
 
   function getDaiBalance() public view returns(uint) {
@@ -71,8 +71,8 @@ contract myVault {
 
   function getTotalBalance() public view returns(uint) {
     require(ethPrice > 0, 'ETH price has not been set');
-    uint daiBalance = daiToken.balanceOf(address(this));
-    uint wethBalance = wethToken.balanceOf(address(this));
+    uint daiBalance = getDaiBalance();
+    uint wethBalance = getWethBalance();
     uint wethUSD = wethBalance * ethPrice; // assumes both assets have 18 decimals
     uint totalBalance = wethUSD + daiBalance;
     return totalBalance;
@@ -137,7 +137,7 @@ contract myVault {
 
   function rebalance() public {
     require(msg.sender == owner, "Only the owner can rebalance their account");
-    uint usdBalance = daiToken.balanceOf(address(this));
+    uint usdBalance = getDaiBalance();
     uint totalBalance = getTotalBalance();
     uint usdBalancePercentage = 100 * usdBalance / totalBalance;
     emit myVaultLog('usdBalancePercentage', usdBalancePercentage);
@@ -159,8 +159,8 @@ contract myVault {
     require(block.timestamp > nextDividendTS, 'Dividend is not yet due');
     uint balance = getDaiBalance();
     uint amount = (balance * usdDividendPercentage) / 100;
-    daiToken.safeTransfer(owner, amount);
     nextDividendTS = block.timestamp + dividendFrequency;
+    daiToken.safeTransfer(owner, amount);
   }
 
   function closeAccount() public {
